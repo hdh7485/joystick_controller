@@ -36,6 +36,9 @@
 #include "SBUS.h"
 #include <Servo.h>
 
+const int buttonPin = 12;     // the number of the pushbutton pin
+const int ledPin =  13;      // the number of the LED pin
+
 Servo left_roll;
 Servo left_pitch;
 Servo right_roll;
@@ -44,23 +47,29 @@ Servo right_pitch;
 // a SBUS object, which is on hardware
 // serial port 1
 SBUS x8r(Serial1);
-
 // channel, fail safe, and lost frames data
 uint16_t channels[16];
 bool failSafe;
 bool lostFrame;
+
 uint16_t sbus_throttle;
 uint16_t sbus_roll;
 uint16_t sbus_pitch;
 uint16_t sbus_yaw;
 
+
 void setup() {
+  pinMode(buttonPin, INPUT);
+  pinMode(ledPin, OUTPUT);
+
   left_roll.attach(5);
   left_pitch.attach(6);
   right_roll.attach(9);
   right_pitch.attach(10);
+
   // begin the SBUS communication
   x8r.begin();
+
   Serial.begin(9600);
 }
 
@@ -79,16 +88,30 @@ void loop() {
     sbus_pitch = *(channels + 1);
     sbus_yaw = *(channels + 3);
 
-    Serial.println(sbus_throttle);
+    int buttonState = digitalRead(buttonPin);
+    digitalWrite(ledPin, buttonState);
 
-    int left_roll_value = convert_sbus2servo(sbus_yaw, 0.6, false);
-    int left_pitch_value = convert_sbus2servo(sbus_throttle, 0.6, true);
-    int right_roll_value = convert_sbus2servo(sbus_roll, 0.6, true);
-    int right_pitch_value = convert_sbus2servo(sbus_pitch, 0.6, false);
+    int left_roll_value = 0;
+    int left_pitch_value = 0;
+    int right_roll_value = 0;
+    int right_pitch_value = 0;
+    if (buttonState == HIGH) {
+      left_roll_value = convert_sbus2servo(sbus_yaw, 0.6, false);
+      left_pitch_value = convert_sbus2servo(sbus_throttle, 0.6, true);
+      right_roll_value = convert_sbus2servo(sbus_roll, 0.6, true);
+      right_pitch_value = convert_sbus2servo(sbus_pitch, 0.6, false);
+    }
+    else {
+      left_roll_value = convert_sbus2servo(sbus_yaw, 0.6, true);
+      left_pitch_value = convert_sbus2servo(sbus_throttle, 0.6, true);
+      right_roll_value = convert_sbus2servo(sbus_roll, 0.6, false);
+      right_pitch_value = convert_sbus2servo(sbus_pitch, 0.6, true);
+    }
 
     left_roll.writeMicroseconds(left_roll_value);
     left_pitch.writeMicroseconds(left_pitch_value);
     right_roll.writeMicroseconds(right_roll_value);
     right_pitch.writeMicroseconds(right_pitch_value);
+    //    Serial.println(sbus_throttle);
   }
 }
