@@ -73,11 +73,11 @@ void setup() {
   Serial.begin(9600);
 }
 
-int convert_sbus2servo(uint16_t subs_signal, float range_gain = 1.0, bool convert_sign = false) {
+int convert_sbus2servo(uint16_t subs_signal, bool convert_sign = false, float range_gain = 1.0, int middle_offset = 0.0) {
   if (convert_sign)
-    return (int)(1030 + ((1030 - (int)subs_signal)) * range_gain);
+    return (int)(1030 + middle_offset + ((1030 + middle_offset - (int)subs_signal)) * range_gain);
   else
-    return (int)(1030 - ((1030 - (int)subs_signal)) * range_gain);
+    return (int)(1030 + middle_offset - ((1030 + middle_offset - (int)subs_signal)) * range_gain);
 }
 
 void loop() {
@@ -95,17 +95,16 @@ void loop() {
     int left_pitch_value = 0;
     int right_roll_value = 0;
     int right_pitch_value = 0;
-    if (buttonState == HIGH) {
-      left_roll_value = convert_sbus2servo(sbus_yaw, 0.6, false);
-      left_pitch_value = convert_sbus2servo(sbus_throttle, 0.6, true);
-      right_roll_value = convert_sbus2servo(sbus_roll, 0.6, true);
-      right_pitch_value = convert_sbus2servo(sbus_pitch, 0.6, false);
-    }
-    else {
-      left_roll_value = convert_sbus2servo(sbus_yaw, 0.6, true);
-      left_pitch_value = convert_sbus2servo(sbus_throttle, 0.6, true);
-      right_roll_value = convert_sbus2servo(sbus_roll, 0.6, false);
-      right_pitch_value = convert_sbus2servo(sbus_pitch, 0.6, true);
+    if (buttonState == HIGH) { //User Controller MODE 2
+      left_roll_value = convert_sbus2servo(sbus_yaw, false, 0.6);
+      left_pitch_value = convert_sbus2servo(sbus_throttle, true, 0.6);
+      right_roll_value = convert_sbus2servo(sbus_roll, true, 0.6);
+      right_pitch_value = convert_sbus2servo(sbus_pitch, false, 0.6);
+    } else { //User Controller MODE 1
+      left_roll_value = convert_sbus2servo(sbus_yaw, true, 0.6);
+      left_pitch_value = convert_sbus2servo(sbus_throttle, true, 0.6);
+      right_roll_value = convert_sbus2servo(sbus_roll, false, 0.6);
+      right_pitch_value = convert_sbus2servo(sbus_pitch, true, 0.6);
     }
 
     left_roll.writeMicroseconds(left_roll_value);
