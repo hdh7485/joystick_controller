@@ -101,7 +101,7 @@ void loop() {
       right_roll_value = convert_sbus2servo(sbus_roll, true, 0.6);
       right_pitch_value = convert_sbus2servo(sbus_pitch, false, 0.6);
     } else { //User Controller MODE 1
-      left_roll_value = convert_sbus2servo(sbus_yaw, true, 0.6);
+      left_roll_value = convert_sbus2servo(sbus_yaw, false, 0.6);
       left_pitch_value = convert_sbus2servo(sbus_throttle, true, 0.6);
       right_roll_value = convert_sbus2servo(sbus_roll, false, 0.6);
       right_pitch_value = convert_sbus2servo(sbus_pitch, true, 0.6);
