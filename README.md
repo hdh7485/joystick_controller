@@ -13,6 +13,18 @@ Joystick Controller는 세 가지의 모드가 있습니다. 각 모드들은 Jo
 - topic type: `/sensor_msgs/Joy`
 - topic name: `/joy`
 
-### How to roslaunch
-
 ### How to rosrun
+Control the joystick controller using ros joy node and a PS4 joystick. PS4 joystick should be connected to your ROS PC.
+```
+# terminal 1:
+$ roscore
+```
+```
+# terminal 2:
+$ rosrun rosserial_python serial_node.py /dev/ttyACM0
+```
+Before run joy_node, `joy_node` package should be installed. If not, you can install using following command:`sudo apt install ros_melodic_joy`
+```
+#terminal 3:
+$ rosrun joy_node joy
+```
