@@ -24,10 +24,14 @@
 
 #include "SBUS.h"
 #include <Servo.h>
+#include <ros.h>
+#include <sensor_msgs/Joy.h>
+
+ros::NodeHandle  nh;
 
 const int user_joy_mode_pin = 12;     // the number of the pushbutton pin
-const int installed_joy_mode_pin = 12;     // the number of the pushbutton pin
-const int operating_mode_pin = 12;     // the number of the pushbutton pin
+const int installed_joy_mode_pin = 24;     // the number of the pushbutton pin
+const int operating_mode_pin = 28;     // the number of the pushbutton pin
 const int ledPin =  13;      // the number of the LED pin
 int user_joy_mode = 2;
 int installed_joy_mode = 2;
@@ -52,10 +56,24 @@ uint16_t sbus_pitch;
 uint16_t sbus_yaw;
 
 
+void joyCb(const sensor_msgs::Joy& joy_msg) {
+  uint16_t value1 = uint16_t((joy_msg.axes[3]) * -500 + 1030);
+  uint16_t value2 = uint16_t((joy_msg.axes[4]) * 500 + 1030);
+  uint16_t value3 = uint16_t((joy_msg.axes[1]) * -500 + 1030);
+  uint16_t value4 = uint16_t((joy_msg.axes[0]) * -500 + 1030);
+  left_roll.writeMicroseconds(value4);
+  left_pitch.writeMicroseconds(value3);
+  right_roll.writeMicroseconds(value1);
+  right_pitch.writeMicroseconds(value2);
+}
+
+ros::Subscriber<sensor_msgs::Joy> sub("/joy", &joyCb );
+
 void setup() {
   pinMode(user_joy_mode_pin, INPUT);
+  pinMode(operating_mode_pin, INPUT);
   pinMode(ledPin, OUTPUT);
-  digitalWrite(ledPin, HIGH);
+
 
   left_roll.attach(5);
   left_pitch.attach(6);
@@ -64,6 +82,9 @@ void setup() {
 
   // begin the SBUS communication
   x8r.begin();
+
+  nh.initNode();
+  nh.subscribe(sub);
 
   Serial.begin(9600);
 }
@@ -86,6 +107,7 @@ void loop() {
   } else {
     installed_joy_mode = 1;
   }
+  digitalWrite(ledPin, digitalRead(operating_mode_pin));
   if (digitalRead(operating_mode_pin) == HIGH) {
     operating_mode = "SBUS";
   } else {
@@ -123,6 +145,7 @@ void loop() {
     }
   }
   else if (operating_mode == "ROS") {
-
+    nh.spinOnce();
+    delay(1);
   }
 }
