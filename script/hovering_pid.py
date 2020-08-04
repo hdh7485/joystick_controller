@@ -7,7 +7,8 @@ from std_msgs.msg import Float64
 
 class PositionController:
     def __init__(self):
-        rospy.Subscriber('/mocap_node/Drone/pose', PoseStamped, self.pose_callback)
+        #rospy.Subscriber('/mocap_node/Drone/pose', PoseStamped, self.pose_callback)
+        rospy.Subscriber('/vrpn_client_node/DDD/pose', PoseStamped, self.pose_callback)
         rospy.Subscriber('/control_effort', Float64, self.effort_callback)
 
         self.pid_error_pub = rospy.Publisher('/state', Float64, queue_size=1)

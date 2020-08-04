@@ -1,5 +1,5 @@
 <launch>
-    <include file="$(find mocap_optitrack)/launch/mocap_drone.launch" />
+    <include file="$(find joystick_controller)/launch/vrpn_drone.launch" />
 
     <node pkg="rosserial_python" name="joystick_controller_teensy" type="serial_node.py" args="/dev/ttyACM0" />
     
