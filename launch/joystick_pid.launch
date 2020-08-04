@@ -1,5 +1,5 @@
 <launch>
-    <include file="$(find mocap_optitrack)/launch/mocap_drone.launch" />
+    <include file="$(find joystick_controller)/launch/vrpn_drone.launch" />
 
     <node pkg="rosserial_python" name="joystick_controller_teensy" type="serial_node.py" args="/dev/ttyACM0" />
     
@@ -13,11 +13,11 @@
     </node>
 
     <node pkg="pid" name="joystick_pid" type="controller" output="screen" ns="yaw">
-      <param name="Kp" value="-0.4"/>
+      <param name="Kp" value="-0.27"/>
       <param name="Ki" value="0.0" />
-      <param name="Kd" value="-0.2" />
-      <param name="upper_limit" value="1" />
-      <param name="lower_limit" value="-1" />
+      <param name="Kd" value="-0.1" />
+      <param name="upper_limit" value="0.4" />
+      <param name="lower_limit" value="-0.4" />
       <param name="windup_limit" value="1" />
     </node>
 
@@ -43,6 +43,7 @@
 
     <node pkg="joystick_controller" name="hovering_pid" type="hovering_pid.py" output="screen" />
 
-    <node pkg="rqt_plot" name="rqt_plot" type="rqt_plot" args="/control_effort" />
+    <node pkg="rqt_plot" name="throttle_plot" type="rqt_plot" args="/throttle/control_effort /throttle/state /throttle/setpoint" />
+    <node pkg="rqt_plot" name="yaw_plot" type="rqt_plot" args="/yaw/control_effort /yaw/state /yaw/setpoint" />
 
 </launch>

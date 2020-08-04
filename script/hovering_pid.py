@@ -8,40 +8,37 @@ import tf
 
 class JoyAxis:
     def __init__(self, ns=''):
-        self.__control_effort = 0
-        self.__state = 0
-        self.__setpoint = 0
+        self.control_effort = 0
+        self.state = 0
+        self.setpoint = 0
 
         rospy.Subscriber(ns+'/control_effort', Float64, self.effort_callback, queue_size=1)
         self.pid_error_pub = rospy.Publisher(ns+'/state', Float64, queue_size=1)
         self.set_point_pub = rospy.Publisher(ns+'/setpoint', Float64, queue_size=1)
 
     def pid_publish(self, state, setpoint):
-        self.__state = state
-        self.__setpoint = setpoint
+        self.state = state
+        self.setpoint = setpoint
         self.pid_error_pub.publish(state)
         self.set_point_pub.publish(setpoint)
 
     def effort_callback(self, effort_data):
-        self.__control_effort = effort_data.data
+        self.control_effort = effort_data.data
 
-    @state.setter
-    def state(self, state):
-        self.__state = state
+    #@state.setter
+    #def state(self, state):
+    #    self.__state = state
 
-    @setpoint.setter
-    def setpoint(self, setpoint):
-        self.__setpoint = setpoint
+    #@setpoint.setter
+    #def setpoint(self, setpoint):
+    #    self.__setpoint = setpoint
 
-    @property
-    def conrtol_effort(self):
-        return self.__control_effort
+    #def conrtol_effort(self):
+    #    return self.__control_effort
 
 class PositionController:
     def __init__(self):
-        rospy.Timer(rospy.Duration(0.001), self.timer_callback)
-
-        rospy.Subscriber('/mocap_node/Drone/pose', PoseStamped, self.pose_callback)
+        #rospy.Subscriber('/mocap_node/Drone/pose', PoseStamped, self.pose_callback)
         
         self.throttle_axis = JoyAxis('/throttle')
         self.yaw_axis = JoyAxis('/yaw')
@@ -59,22 +56,28 @@ class PositionController:
 
         self.joy_throttle_output = -1
 
+        rospy.Timer(rospy.Duration(0.001), self.timer_callback)
+        rospy.Subscriber('/vrpn_client_node/DDD/pose', PoseStamped, self.pose_callback)
+        #rospy.Subscriber('/control_effort', Float64, self.effort_callback)
+
+        rospy.Subscriber('/mocap_node/Drone/pose', PoseStamped, self.pose_callback)
+
     def pose_callback(self, pose_data):
         self.current_xyz = [pose_data.pose.position.x, pose_data.pose.position.y, pose_data.pose.position.z]
 
         self.z_error = self.reference_xyz[2] - self.current_xyz[2]
 
-        q = pose_data.pose.quaternion
+        q = pose_data.pose.orientation
         self.current_q = (q.x, q.y, q.z, q.w)
         self.current_rpy = tf.transformations.euler_from_quaternion(self.current_q)
         self.yaw_error = self.reference_rpy[2] - self.current_rpy[2]
 
-        self.throttle_axis.pid_publish(self.z_error, self.reference_xyz[2])
+        self.throttle_axis.pid_publish(self.z_error, 0)
         self.yaw_axis.pid_publish(self.yaw_error, self.reference_rpy[2])
 
-    def timer_callback(self):
-        self.joy_throttle_value = (self.z_bias*2-1) + self.throttle_axis.control_effort()
-        self.joy_yaw_value = self.yaw_axis.control_effort()
+    def timer_callback(self, time):
+        self.joy_throttle_value = (self.z_bias*2-1) + self.throttle_axis.control_effort
+        self.joy_yaw_value = self.yaw_axis.control_effort
 
         pub_joy_msg = Joy(axes=[0,0,0,0,0,0,0])
 
