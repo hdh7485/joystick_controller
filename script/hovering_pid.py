@@ -42,6 +42,8 @@ class PositionController:
         
         self.throttle_axis = JoyAxis('/throttle')
         self.yaw_axis = JoyAxis('/yaw')
+        self.roll_axis = JoyAxis('/roll')
+        self.pitch_axis = JoyAxis('/pitch')
 
         self.joy_pub = rospy.Publisher('/joy', Joy, queue_size=1)
 
@@ -71,18 +73,26 @@ class PositionController:
         self.current_q = (q.x, q.y, q.z, q.w)
         self.current_rpy = tf.transformations.euler_from_quaternion(self.current_q)
         self.yaw_error = self.reference_rpy[2] - self.current_rpy[2]
+        self.roll_error = self.reference_xyz[1] - self.current_xyz[1]
+        self.pitch_error = self.reference_xyz[0] - self.current_xyz[0]
 
         self.throttle_axis.pid_publish(self.z_error, 0)
         self.yaw_axis.pid_publish(self.yaw_error, self.reference_rpy[2])
+        self.roll_axis.pid_publish(self.roll_error, self.reference_xyz[1])
+        self.pitch_axis.pid_publish(self.pitch_error, self.reference_xyz[0])
 
     def timer_callback(self, time):
         self.joy_throttle_value = (self.z_bias*2-1) + self.throttle_axis.control_effort
         self.joy_yaw_value = self.yaw_axis.control_effort
+        self.joy_roll_value = self.roll_axis.control_effort
+        self.joy_pitch_value = self.pitch_axis.control_effort
 
         pub_joy_msg = Joy(axes=[0,0,0,0,0,0,0])
 
         pub_joy_msg.axes[0] = self.joy_yaw_value
         pub_joy_msg.axes[1] = self.joy_throttle_value
+        pub_joy_msg.axes[3] = self.joy_roll_value
+        pub_joy_msg.axes[4] = self.joy_pitch_value
 
         self.joy_pub.publish(pub_joy_msg)
 
