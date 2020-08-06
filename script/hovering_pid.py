@@ -5,6 +5,7 @@ from sensor_msgs.msg import Joy
 from geometry_msgs.msg import PoseStamped
 from std_msgs.msg import Float64
 import tf
+import math
 
 class JoyAxis:
     def __init__(self, ns=''):
@@ -51,7 +52,7 @@ class PositionController:
         self.reference_rpy = [0, 0, 0]
 
         self.current_xyz = [0, 0, 0]
-        self.current_rqy = [0, 0, 0]
+        self.current_rpy = [0, 0, 0]
         self.current_q = [0, 0, 0, 0]
 
         self.z_bias = 0.5
@@ -64,6 +65,11 @@ class PositionController:
 
         rospy.Subscriber('/mocap_node/Drone/pose', PoseStamped, self.pose_callback)
 
+    def angle_transform(self, x, y, theta):
+        transformed_x = x*math.cos(theta) - y*math.sin(theta)
+        transformed_y = x*math.sin(theta) + y*math.cos(theta)
+        return [transformed_x, transformed_y]
+
     def pose_callback(self, pose_data):
         self.current_xyz = [pose_data.pose.position.x, pose_data.pose.position.y, pose_data.pose.position.z]
 
@@ -73,8 +79,11 @@ class PositionController:
         self.current_q = (q.x, q.y, q.z, q.w)
         self.current_rpy = tf.transformations.euler_from_quaternion(self.current_q)
         self.yaw_error = self.reference_rpy[2] - self.current_rpy[2]
-        self.roll_error = self.reference_xyz[1] - self.current_xyz[1]
-        self.pitch_error = self.reference_xyz[0] - self.current_xyz[0]
+        #self.roll_error = self.reference_xyz[1] - self.current_xyz[1]
+        #self.pitch_error = self.reference_xyz[0] - self.current_xyz[0]
+        [self.roll_error, self.pitch_error] = \
+            self.angle_transform(self.reference_xyz[1] - self.current_xyz[1], 
+            self.reference_xyz[0] - self.current_xyz[0], self.current_rpy[2])
 
         self.throttle_axis.pid_publish(self.z_error, 0)
         self.yaw_axis.pid_publish(self.yaw_error, self.reference_rpy[2])
