@@ -5,7 +5,7 @@
     
     <node pkg="pid" name="joystick_pid" type="controller" output="screen" ns="throttle">
       <param name="Kp" value="-0.4"/>
-      <param name="Ki" value="0.0" />
+      <param name="Ki" value="-0.08" />
       <param name="Kd" value="-0.2" />
       <param name="upper_limit" value="1" />
       <param name="lower_limit" value="-1" />
@@ -15,16 +15,17 @@
     <node pkg="pid" name="joystick_pid" type="controller" output="screen" ns="yaw">
       <param name="Kp" value="-0.27"/>
       <param name="Ki" value="0.0" />
-      <param name="Kd" value="0.0" />
-      <param name="upper_limit" value="0.4" />
-      <param name="lower_limit" value="-0.4" />
+      <param name="Kd" value="-0.1" />
+      <param name="upper_limit" value="0.7" />
+      <param name="lower_limit" value="-0.7" />
       <param name="windup_limit" value="1" />
+      <param name="angle_error" value="true" />
     </node>
 
     <node pkg="pid" name="joystick_pid" type="controller" output="screen" ns="roll">
       <param name="Kp" value="-0.1"/>
-      <param name="Ki" value="0.0" />
-      <param name="Kd" value="-0.1" />
+      <param name="Ki" value="-0.01" />
+      <param name="Kd" value="-0.15" />
       <param name="upper_limit" value="0.7" />
       <param name="lower_limit" value="-0.7" />
       <param name="windup_limit" value="0.7" />
@@ -32,8 +33,8 @@
 
     <node pkg="pid" name="joystick_pid" type="controller" output="screen" ns="pitch">
       <param name="Kp" value="-0.1"/>
-      <param name="Ki" value="0.0" />
-      <param name="Kd" value="-0.1" />
+      <param name="Ki" value="-0.01" />
+      <param name="Kd" value="-0.15" />
       <param name="upper_limit" value="0.7" />
       <param name="lower_limit" value="-0.7" />
       <param name="windup_limit" value="0.7" />

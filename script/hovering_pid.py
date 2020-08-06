@@ -79,11 +79,11 @@ class PositionController:
         self.current_q = (q.x, q.y, q.z, q.w)
         self.current_rpy = tf.transformations.euler_from_quaternion(self.current_q)
         self.yaw_error = self.reference_rpy[2] - self.current_rpy[2]
-        self.roll_error = self.reference_xyz[1] - self.current_xyz[1]
-        self.pitch_error = self.reference_xyz[0] - self.current_xyz[0]
-        #[self.roll_error, self.pitch_error] = \
-        #    self.angle_transform(self.reference_xyz[1] - self.current_xyz[1], 
-        #    self.reference_xyz[0] - self.current_xyz[0], self.current_rpy[2])
+        #self.roll_error = self.reference_xyz[1] - self.current_xyz[1]
+        #self.pitch_error = self.reference_xyz[0] - self.current_xyz[0]
+        [self.roll_error, self.pitch_error] = \
+            self.angle_transform(self.reference_xyz[1] - self.current_xyz[1], 
+            self.reference_xyz[0] - self.current_xyz[0], self.current_rpy[2])
 
         self.throttle_axis.pid_publish(self.z_error, 0)
         self.yaw_axis.pid_publish(self.yaw_error, self.reference_rpy[2])
