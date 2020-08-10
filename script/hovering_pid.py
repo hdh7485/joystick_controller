@@ -57,18 +57,18 @@ class PositionController:
         self.current_rpy = [0, 0, 0]
         self.current_q = [0, 0, 0, 1]
 
-        self.z_bias = 0.35
-        self.takeoff_bias = 0.35
-        self.takeoff_height = 0.6
+        self.z_bias = 0.5
+        self.takeoff_height = 0.5
 
         self.joy_throttle_output = -1
 
         self.state = 'ground'
 
         rospy.Timer(rospy.Duration(0.001), self.timer_callback)
-        rospy.Subscriber('/vrpn_client_node/DDD/pose', PoseStamped, self.pose_callback, queue_size=1)
-        rospy.Subscriber('/takeoff', Empty, self.takeoff_callback, queue_size=1)
-        rospy.Subscriber('/target_point', PoseStamped, self.target_point_callback, queue_size=1)
+        rospy.Subscriber('/vrpn_client_node/DDD/pose', PoseStamped, self.pose_callback)
+        rospy.Subscriber('/mocap_node/Drone/pose', PoseStamped, self.pose_callback)
+        rospy.Subscriber('/takeoff', Empty, self.takeoff_callback)
+        rospy.Subscriber('/target_point', PoseStamped, self.target_point_callback)
 
     def angle_transform(self, x, y, theta):
         transformed_x = x*math.cos(theta) - y*math.sin(theta)
@@ -104,14 +104,12 @@ class PositionController:
             [self.roll_error, self.pitch_error] = \
                 self.angle_transform(self.reference_xyz[1] - self.current_xyz[1], 
                 self.reference_xyz[0] - self.current_xyz[0], self.current_rpy[2])
-
             self.throttle_axis.pid_publish(self.z_error, 0)
-            self.yaw_axis.pid_publish(self.yaw_error, 0)
+            self.yaw_axis.pid_publish(self.yaw_error, self.reference_rpy[2])
+            self.roll_axis.pid_publish(self.roll_error, self.reference_xyz[1])
+            self.pitch_axis.pid_publish(self.pitch_error, self.reference_xyz[0])
 
-            self.roll_axis.pid_publish(self.roll_error, 0)
-            self.pitch_axis.pid_publish(self.pitch_error, 0)
-
-            self.joy_throttle_value = (self.takeoff_bias*2-1) + self.throttle_axis.control_effort
+            self.joy_throttle_value = (self.z_bias*2-1) + self.throttle_axis.control_effort
             self.joy_yaw_value = self.yaw_axis.control_effort
             self.joy_roll_value = self.roll_axis.control_effort
             self.joy_pitch_value = self.pitch_axis.control_effort
@@ -122,12 +120,10 @@ class PositionController:
             [self.roll_error, self.pitch_error] = \
                 self.angle_transform(self.reference_xyz[1] - self.current_xyz[1], 
                 self.reference_xyz[0] - self.current_xyz[0], self.current_rpy[2])
-
             self.throttle_axis.pid_publish(self.z_error, 0)
-            self.yaw_axis.pid_publish(self.yaw_error, 0)
-
-            self.roll_axis.pid_publish(self.roll_error, 0)
-            self.pitch_axis.pid_publish(self.pitch_error, 0)
+            self.yaw_axis.pid_publish(self.yaw_error, self.reference_rpy[2])
+            self.roll_axis.pid_publish(self.roll_error, self.reference_xyz[1])
+            self.pitch_axis.pid_publish(self.pitch_error, self.reference_xyz[0])
 
             self.joy_throttle_value = (self.z_bias*2-1) + self.throttle_axis.control_effort
             self.joy_yaw_value = self.yaw_axis.control_effort
@@ -135,10 +131,6 @@ class PositionController:
             self.joy_pitch_value = self.pitch_axis.control_effort
 
         elif self.state is 'ground':
-            self.throttle_axis.pid_publish(0, 0)
-            self.yaw_axis.pid_publish(0, 0)
-            self.roll_axis.pid_publish(0, 0)
-            self.pitch_axis.pid_publish(0, 0)
             self.joy_throttle_value = -1.0
             self.joy_yaw_value = 0.0
             self.joy_roll_value = 0.0
