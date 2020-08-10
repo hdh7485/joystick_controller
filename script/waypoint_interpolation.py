@@ -91,7 +91,7 @@ class WaypointInterpolation:
         '''
         self.path = Path()
         self.path.header = self.wp_start.header
-        step = int(self.distance / self.dis_res) + 1
+        step = int(math.ceil(self.distance / self.dis_res)) 
         
         if step == 1:   # no need to interpolate            
             self.path.poses.append(self.wp_start)
@@ -108,6 +108,7 @@ class WaypointInterpolation:
             quaternion_list = [None for n in range(step)]
 
             # linear interpolatation
+            # this includes the first point
             for n in range(step):
                 # distance in each axis
                 position_list[n][0] = self.wp_start.pose.position.x + n * self.dis_res * self.dir_vec.x 
