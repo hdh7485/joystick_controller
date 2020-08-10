@@ -140,38 +140,49 @@ class WaypointInterpolation:
                                         )
 
 if __name__ == '__main__':
-    path_pub = rospy.Publisher("/path", Path, queue_size=1)
+    try:
+        rospy.init_node("waypoint_interpolation", anonymous=True)
 
-    rospy.init_node("Test", anonymous=True)
-    wp1 = PoseStamped()
-    wp1.header.seq = 0
-    wp1.header.stamp = rospy.Time.now()
-    wp1.header.frame_id = "map"
-    wp1.pose.position.x = 2.0
-    wp1.pose.orientation.w = 1.0
+        path_pub = rospy.Publisher("/path", Path, queue_size=1)
 
-    wp2 = PoseStamped()
-    wp2.header.seq = 1
-    wp2.header.stamp = rospy.Time.now()
-    wp2.header.frame_id = "map"
-    wp2.pose.position.x = 0.0
-    wp2.pose.orientation.z = 1.0
+        wp1 = PoseStamped()
+        wp1.header.seq = 0
+        wp1.header.stamp = rospy.Time.now()
+        wp1.header.frame_id = "map"
+        wp1.pose.position.x = 0.0
+        wp1.pose.position.y = 0.0
+        wp1.pose.position.z = 0.0
+        wp1.pose.orientation.w = 1.0
 
-    start_time = time.time()
-    interpolator = WaypointInterpolation(wp1, wp2, 0.1)
-    print("Time used = {} seconds".format(time.time() - start_time))
+        wp2 = PoseStamped()
+        wp2.header.seq = 1
+        wp2.header.stamp = rospy.Time.now()
+        wp2.header.frame_id = "map"
+        wp2.pose.position.x = 1.5
+        wp2.pose.position.y = 2.0
+        wp2.pose.position.z = 3.5
+        wp2.pose.orientation.z = 1.0
 
-    print(interpolator.path)
+        start_time = time.time()
+        interpolator = WaypointInterpolation(wp1, wp2, 0.5)
+        print("Time used = {} seconds".format(time.time() - start_time))
+
+        print(interpolator.path)
+        
+        # print(type(interpolator.path))
+        rate = rospy.Rate(10) # 10hz
+        while not rospy.is_shutdown():
+            path_pub.publish(interpolator.path)
+            print("finish publish")
+            rate.sleep()
     
-    # print(type(interpolator.path))
-    path_pub.publish(interpolator.path)
-    print("finish publish")
-    rospy.spin()
-    # print("test")
-    # print(a)
-    # euler1 = tf.transformations.euler_from_quaternion((0, 0, 0, 1))
-    # euler2 = tf.transformations.euler_from_quaternion((0, 0, 1, 0))
-    # quaternion = tf.transformations.quaternion_from_euler(0, 0, 1.57, 'sxyz')
-    # print(euler1, euler2)
-    # print(quaternion)
-    # waypoint_interpolation(wp1, wp2)
+        # print("test")
+        # print(a)
+        # euler1 = tf.transformations.euler_from_quaternion((0, 0, 0, 1))
+        # euler2 = tf.transformations.euler_from_quaternion((0, 0, 1, 0))
+        # quaternion = tf.transformations.quaternion_from_euler(0, 0, 1.57, 'sxyz')
+        # print(euler1, euler2)
+        # print(quaternion)
+        # waypoint_interpolation(wp1, wp2)
+    except rospy.ROSInterruptException:
+        pass
