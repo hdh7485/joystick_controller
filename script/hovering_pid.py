@@ -101,17 +101,6 @@ class PositionController:
 
     def timer_callback(self, time):
         if self.state is 'takeoff':
-<<<<<<< HEAD
-            self.z_error = self.takeoff_height - self.current_xyz[2]
-            self.yaw_error = 0 - self.current_rpy[2]
-            [self.roll_error, self.pitch_error] = \
-                self.angle_transform(self.reference_xyz[1] - self.current_xyz[1], 
-                self.reference_xyz[0] - self.current_xyz[0], self.current_rpy[2])
-            self.throttle_axis.pid_publish(self.z_error, 0)
-            self.yaw_axis.pid_publish(self.yaw_error, self.reference_rpy[2])
-            self.roll_axis.pid_publish(self.roll_error, self.reference_xyz[1])
-            self.pitch_axis.pid_publish(self.pitch_error, self.reference_xyz[0])
-=======
             # self.z_error = self.takeoff_height - self.current_xyz[2]
             # self.yaw_error = 0 - self.current_rpy[2]
             # [self.roll_error, self.pitch_error] = \
@@ -130,7 +119,6 @@ class PositionController:
             self.yaw_axis.pid_publish(self.current_rpy[2], 0)
             self.roll_axis.pid_publish(self.current_xyz[1], self.last_landing_xyz[1])
             self.pitch_axis.pid_publish(self.current_xyz[0], self.last_landing_xyz[0])
->>>>>>> devel
 
             self.joy_throttle_value = (self.z_bias*2-1) + self.throttle_axis.control_effort
             self.joy_yaw_value = self.yaw_axis.control_effort
@@ -138,17 +126,6 @@ class PositionController:
             self.joy_pitch_value = self.pitch_axis.control_effort
 
         elif self.state is 'target_point':
-<<<<<<< HEAD
-            self.z_error = self.reference_xyz[2] - self.current_xyz[2]
-            self.yaw_error = self.reference_rpy[2] - self.current_rpy[2]
-            [self.roll_error, self.pitch_error] = \
-                self.angle_transform(self.reference_xyz[1] - self.current_xyz[1], 
-                self.reference_xyz[0] - self.current_xyz[0], self.current_rpy[2])
-            self.throttle_axis.pid_publish(self.z_error, 0)
-            self.yaw_axis.pid_publish(self.yaw_error, self.reference_rpy[2])
-            self.roll_axis.pid_publish(self.roll_error, self.reference_xyz[1])
-            self.pitch_axis.pid_publish(self.pitch_error, self.reference_xyz[0])
-=======
             # self.z_error = self.reference_xyz[2] - self.current_xyz[2]
             # self.yaw_error = self.reference_rpy[2] - self.current_rpy[2]
             # [self.roll_error, self.pitch_error] = \
@@ -169,7 +146,6 @@ class PositionController:
             self.yaw_axis.pid_publish(self.current_rpy[2], self.reference_rpy[2])
             self.roll_axis.pid_publish(self.current_xyz[1], self.reference_xyz[1])
             self.pitch_axis.pid_publish(self.current_xyz[0], self.reference_xyz[0])
->>>>>>> devel
 
             self.joy_throttle_value = (self.z_bias*2-1) + self.throttle_axis.control_effort
             self.joy_yaw_value = self.yaw_axis.control_effort
