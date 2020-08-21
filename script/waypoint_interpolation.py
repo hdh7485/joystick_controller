@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-
 import rospy
 import math
 import copy
@@ -10,6 +9,17 @@ from std_msgs.msg import Header
 from geometry_msgs.msg import PoseStamped, Pose, Vector3, Point, Quaternion
 from nav_msgs.msg import Path
 import tf
+
+def deg_to_rad(deg):
+    deg = normalize_yaw(deg)
+    return deg * math.pi / 180
+
+def normalize_yaw(rad):
+    while(rad > math.pi):
+        rad -= 2 * math.pi
+    while(rad < -math.pi):
+        rad += 2 * math.pi
+    return rad
 
 class WaypointInterpolation:
     def __init__(self, wp_start, wp_end, dis_res):
@@ -36,6 +46,9 @@ class WaypointInterpolation:
         
         self.path = None
         self._interpolate()
+
+    def get_path(self):
+        return self.path
     
     def _get_displacement_vector(self):
         '''
@@ -101,6 +114,7 @@ class WaypointInterpolation:
             roll_diff = self.rpy_end[0] - self.rpy_start[0]
             pitch_diff = self.rpy_end[1] - self.rpy_start[1]
             yaw_diff = self.rpy_end[2] - self.rpy_start[2]
+            yaw_diff = normalize_yaw(yaw_diff)
             roll_res = roll_diff / step
             pitch_res = pitch_diff / step
             yaw_res = yaw_diff / step
@@ -139,6 +153,27 @@ class WaypointInterpolation:
                                                     )
                                         )
 
+def path_generator(wps, dis_res):
+    assert(isinstance(wps, list) and isinstance(wps[0], PoseStamped)), "wps should be a list of waypoints"
+    assert(len(wps) > 1), "the list lenght should be more than one"
+    num_wp = len(wps)
+    final_path = Path()
+    final_path.header = wps[0].header
+    for n in range(num_wp - 1):
+        wp_interpolator = WaypointInterpolation(wps[n], wps[n+1], dis_res)
+        temp_path = wp_interpolator.get_path()
+        poses_list = temp_path.poses
+
+        # prevent redundancy
+        if (n != num_wp - 2):
+            poses_list.pop()    # delete last element, otherwise redundant
+
+        final_path.poses = final_path.poses + poses_list
+
+
+    return final_path
+    
+
 if __name__ == '__main__':
     try:
         rospy.init_node("waypoint_interpolation", anonymous=True)
@@ -158,22 +193,56 @@ if __name__ == '__main__':
         wp2.header.seq = 1
         wp2.header.stamp = rospy.Time.now()
         wp2.header.frame_id = "map"
-        wp2.pose.position.x = 1.5
-        wp2.pose.position.y = 2.0
-        wp2.pose.position.z = 3.5
+        wp2.pose.position.x = 3.0
+        wp2.pose.position.y = 0.0
+        wp2.pose.position.z = 0.2
         wp2.pose.orientation.z = 1.0
 
-        start_time = time.time()
-        interpolator = WaypointInterpolation(wp1, wp2, 0.5)
-        print("Time used = {} seconds".format(time.time() - start_time))
+        wp3 = PoseStamped()
+        wp3.header.seq = 2
+        wp3.header.stamp = rospy.Time.now()
+        wp3.header.frame_id = "map"
+        wp3.pose.position.x = 3.0
+        wp3.pose.position.y = 3.0
+        wp3.pose.position.z = 0.4
+        wp3.pose.orientation.w = 1.0
 
-        print(interpolator.path)
+        wp4 = PoseStamped()
+        wp4.header.seq = 3
+        wp4.header.stamp = rospy.Time.now()
+        wp4.header.frame_id = "map"
+        wp4.pose.position.x = 0.0
+        wp4.pose.position.y = 3.0
+        wp4.pose.position.z = 0.6
+        wp4.pose.orientation.z = 1.0
+
+        wp5 = PoseStamped()
+        wp5.header.seq = 3
+        wp5.header.stamp = rospy.Time.now()
+        wp5.header.frame_id = "map"
+        wp5.pose.position.x = 0.0
+        wp5.pose.position.y = 0.0
+        wp5.pose.position.z = 0.8
+        wp5.pose.orientation.w = 1.0
+
         
-        # print(type(interpolator.path))
+        interpolator = WaypointInterpolation(wp1, wp2, 0.3)
+        
+
+        # print(interpolator.path)
+        
+        print("==========================================")
+
+        wps = [wp1, wp2, wp3, wp4, wp5]
+        # wps = [wp1, wp2]
+        start_time = time.time()
+        test = path_generator(wps, 0.8)
+        print("Time used = {} seconds".format(time.time() - start_time))
+        print(test)
         rate = rospy.Rate(10) # 10hz
         while not rospy.is_shutdown():
-            path_pub.publish(interpolator.path)
-            print("finish publish")
+            path_pub.publish(test)
+            # print("finish publish")
             rate.sleep()
     
         # print("test")
