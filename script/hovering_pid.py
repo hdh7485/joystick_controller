@@ -66,7 +66,7 @@ class PositionController:
         self.state = 'ground'
 
         rospy.Timer(rospy.Duration(0.001), self.timer_callback)
-        rospy.Subscriber('/vrpn_client_node/DDD/pose', PoseStamped, self.pose_callback, queue_size=1)
+        rospy.Subscriber('/vrpn_client_node/Dh_drone/pose', PoseStamped, self.pose_callback, queue_size=1)
         rospy.Subscriber('/takeoff', Empty, self.takeoff_callback, queue_size=1)
         rospy.Subscriber('/target_point', PoseStamped, self.target_point_callback, queue_size=1)
 
