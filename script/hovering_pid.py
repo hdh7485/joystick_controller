@@ -65,10 +65,9 @@ class PositionController:
         self.state = 'ground'
 
         rospy.Timer(rospy.Duration(0.001), self.timer_callback)
-        rospy.Subscriber('/vrpn_client_node/DDD/pose', PoseStamped, self.pose_callback)
-        rospy.Subscriber('/mocap_node/Drone/pose', PoseStamped, self.pose_callback)
-        rospy.Subscriber('/takeoff', Empty, self.takeoff_callback)
-        rospy.Subscriber('/target_point', PoseStamped, self.target_point_callback)
+        rospy.Subscriber('/vrpn_client_node/Dh_drone/pose', PoseStamped, self.pose_callback, queue_size=1)
+        rospy.Subscriber('/takeoff', Empty, self.takeoff_callback, queue_size=1)
+        rospy.Subscriber('/target_point', PoseStamped, self.target_point_callback, queue_size=1)
 
     def angle_transform(self, x, y, theta):
         transformed_x = x*math.cos(theta) - y*math.sin(theta)
