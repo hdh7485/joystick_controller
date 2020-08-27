@@ -15,13 +15,13 @@ class JoyAxis:
         self.setpoint = 0
 
         rospy.Subscriber(ns+'/control_effort', Float64, self.effort_callback, queue_size=1)
-        self.pid_error_pub = rospy.Publisher(ns+'/state', Float64, queue_size=1)
+        self.pid_state_pub = rospy.Publisher(ns+'/state', Float64, queue_size=1)
         self.set_point_pub = rospy.Publisher(ns+'/setpoint', Float64, queue_size=1)
 
     def pid_publish(self, state, setpoint):
         self.state = state
         self.setpoint = setpoint
-        self.pid_error_pub.publish(state)
+        self.pid_state_pub.publish(state)
         self.set_point_pub.publish(setpoint)
 
     def effort_callback(self, effort_data):
@@ -81,13 +81,13 @@ class PositionController:
         else:
             pass
 
-    def target_point_callback(self, pose_data):
+    def target_point_callback(self, target_pose_data):
         if self.state is not 'ground':
             self.state = 'target_point'
-            q = pose_data.pose.orientation
+            q = target_pose_data.pose.orientation
             self.reference_q = (q.x, q.y, q.z, q.w)
             self.reference_rpy = tf.transformations.euler_from_quaternion(self.current_q)
-            self.reference_xyz = [pose_data.pose.position.x, pose_data.pose.position.y, pose_data.pose.position.z]
+            self.reference_xyz = [target_pose_data.pose.position.x, target_pose_data.pose.position.y, target_pose_data.pose.position.z]
         else:
             pass
 
@@ -112,13 +112,15 @@ class PositionController:
             # self.roll_axis.pid_publish(self.roll_error, 0)
             # self.pitch_axis.pid_publish(self.pitch_error, 0)
 
-            [self.reference_xyz[1], self.reference_xyz[2]] = self.angle_transform(
-                self.reference_xyz[1], self.reference_xyz[0], self.current_rpy[2])
+            #[self.reference_xyz[0], self.reference_xyz[1]] = self.angle_transform(
+            #    self.current_xyz[0], self.current_xyz[1], self.current_rpy[2])
+            [transformed_x, transformed_y] = self.angle_transform(
+                self.last_landing_xyz[0], self.last_landing_xyz[1], self.current_rpy[2])
 
             self.throttle_axis.pid_publish(self.current_xyz[2], self.takeoff_height)
             self.yaw_axis.pid_publish(self.current_rpy[2], 0)
-            self.roll_axis.pid_publish(self.current_xyz[1], self.last_landing_xyz[1])
-            self.pitch_axis.pid_publish(self.current_xyz[0], self.last_landing_xyz[0])
+            self.roll_axis.pid_publish(self.current_xyz[1], transformed_y)
+            self.pitch_axis.pid_publish(self.current_xyz[0], transformed_x)
 
             self.joy_throttle_value = (self.takeoff_bias*2-1) + self.throttle_axis.control_effort
             self.joy_yaw_value = self.yaw_axis.control_effort
@@ -139,13 +141,17 @@ class PositionController:
 
             # self.z_error = self.reference_xyz[2] - self.current_xyz[2]
             # self.yaw_error = self.reference_rpy[2] - self.current_rpy[2]
-            [self.reference_xyz[1], self.reference_xyz[2]] = self.angle_transform(
-                self.reference_xyz[1], self.reference_xyz[0], self.current_rpy[2])
+
+            # [self.reference_xyz[0], self.reference_xyz[1]] = self.angle_transform(
+            #     self.current_xyz[0], self.current_xyz[1], self.current_rpy[2])
+            [transformed_x, transformed_y] = self.angle_transform(
+                self.reference_xyz[0], self.reference_xyz[1], self.current_rpy[2])
 
             self.throttle_axis.pid_publish(self.current_xyz[2], self.reference_xyz[2])
             self.yaw_axis.pid_publish(self.current_rpy[2], self.reference_rpy[2])
-            self.roll_axis.pid_publish(self.current_xyz[1], self.reference_xyz[1])
-            self.pitch_axis.pid_publish(self.current_xyz[0], self.reference_xyz[0])
+            self.roll_axis.pid_publish(self.current_xyz[1], transformed_y)
+            rospy.loginfo(self.reference_xyz[1])
+            self.pitch_axis.pid_publish(self.current_xyz[0], transformed_x)
 
             self.joy_throttle_value = (self.z_bias*2-1) + self.throttle_axis.control_effort
             self.joy_yaw_value = self.yaw_axis.control_effort
