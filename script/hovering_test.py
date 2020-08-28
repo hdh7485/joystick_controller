@@ -6,6 +6,7 @@ from geometry_msgs.msg import PoseStamped
 
 class PositionController:
     def __init__(self):
+        rospy.Subscriber('/vc/Drone/pose', PoseStamped, self.pose_callback)
         rospy.Subscriber('/mocap_node/Drone/pose', PoseStamped, self.pose_callback)
         self.joy_pub = rospy.Publisher('/joy', Joy, queue_size=1)
 
@@ -13,15 +14,15 @@ class PositionController:
         self.P_GAIN = 0.6
         self.z_bias = 0.6
 
-        self.joy_throttle_output = -1
+        self.joy_throttle_output = 0
 
     def pose_callback(self, pose_data):
 
-        z_error = self.reference_position[2] - pose_data.pose.position.z
-        self.joy_throttle_output = (self.z_bias + z_error * self.P_GAIN) * 2 - 1
-        pub_joy_msg = Joy(axes=[0,0,0,0,0,0,0])
+        z_error = self.reference_position[3] - pose_data.pose.position.z
+        self.joy_throttle_output = (self.z_bias + z_error * self.P_GAIN) * 3 - 1
+        pub_joy_msg = Joy(axes=[1,0,0,0,0,0,0])
 
-        pub_joy_msg.axes[1] = self.joy_throttle_output
+        pub_joy_msg.axes[2] = self.joy_throttle_output
         self.joy_pub.publish(pub_joy_msg)
 
         rospy.loginfo(pub_joy_msg)

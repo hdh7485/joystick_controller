@@ -113,8 +113,8 @@ class PositionController:
 
             #[self.reference_xyz[0], self.reference_xyz[1]] = self.angle_transform(
             #    self.current_xyz[0], self.current_xyz[1], self.current_rpy[2])
-            [transformed_x, transformed_y] = self.angle_transform(
-                self.last_landing_xyz[0], self.last_landing_xyz[1], self.current_rpy[2])
+            [transformed_y, transformed_x] = self.angle_transform(
+                self.last_landing_xyz[1], self.last_landing_xyz[0], self.current_rpy[2])
 
             self.throttle_axis.pid_publish(self.current_xyz[2], self.takeoff_height)
             self.yaw_axis.pid_publish(self.current_rpy[2], 0)
@@ -143,8 +143,8 @@ class PositionController:
 
             # [self.reference_xyz[0], self.reference_xyz[1]] = self.angle_transform(
             #     self.current_xyz[0], self.current_xyz[1], self.current_rpy[2])
-            [transformed_x, transformed_y] = self.angle_transform(
-                self.reference_xyz[0], self.reference_xyz[1], self.current_rpy[2])
+            [transformed_y, transformed_x] = self.angle_transform(
+                self.reference_xyz[1], self.reference_xyz[0], self.current_rpy[2])
 
             self.throttle_axis.pid_publish(self.current_xyz[2], self.reference_xyz[2])
             self.yaw_axis.pid_publish(self.current_rpy[2], self.reference_rpy[2])
