@@ -55,8 +55,8 @@ class PositionController:
         self.current_rpy = [0, 0, 0]
         self.current_q = [0, 0, 0, 1]
 
-        self.z_bias = 0.5
-        self.takeoff_height = 0.5
+        self.z_bias = 0.46
+        self.takeoff_height = 0.6
 
         self.last_landing_xyz = [0, 0, 0]
 
@@ -145,11 +145,12 @@ class PositionController:
             #     self.current_xyz[0], self.current_xyz[1], self.current_rpy[2])
             [transformed_y, transformed_x] = self.angle_transform(
                 self.reference_xyz[1], self.reference_xyz[0], self.current_rpy[2])
+            #[transformed_x, transformed_y] = self.angle_transform(
+            #    self.reference_xyz[0], self.reference_xyz[1], self.current_rpy[2])
 
             self.throttle_axis.pid_publish(self.current_xyz[2], self.reference_xyz[2])
             self.yaw_axis.pid_publish(self.current_rpy[2], self.reference_rpy[2])
             self.roll_axis.pid_publish(self.current_xyz[1], transformed_y)
-            rospy.loginfo(self.reference_xyz[1])
             self.pitch_axis.pid_publish(self.current_xyz[0], transformed_x)
 
             self.joy_throttle_value = (self.z_bias*2-1) + self.throttle_axis.control_effort
