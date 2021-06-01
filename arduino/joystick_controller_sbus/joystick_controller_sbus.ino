@@ -107,10 +107,14 @@ void loop() {
         right_roll_value = convert_sbus2servo(sbus_roll, true, 0.6);
         right_pitch_value = convert_sbus2servo(sbus_pitch, false, 0.6);
       } else { //User Controller MODE 1
-        left_roll_value = convert_sbus2servo(sbus_yaw, false, 0.48);
-        left_pitch_value = convert_sbus2servo(sbus_throttle, false, 0.48, 0, 1387);
-        right_roll_value = convert_sbus2servo(sbus_roll, false, 0.48);
-        right_pitch_value = convert_sbus2servo(sbus_pitch, true, 0.48);
+        //        left_roll_value = convert_sbus2servo(sbus_yaw, false, 0.5, 100);
+        //        left_pitch_value = convert_sbus2servo(sbus_throttle, false, 0.48, 0, 1387);
+        //        right_roll_value = convert_sbus2servo(sbus_roll, false, 0.5, -100);
+        //        right_pitch_value = convert_sbus2servo(sbus_pitch, true, 0.5);
+        left_roll_value = map(sbus_yaw, 198, 1792, 700, 1400);
+        left_pitch_value = map(sbus_throttle, 992, 1790, 700, 1450);
+        right_roll_value = map(sbus_roll, 193, 1786, 550, 1400);
+        right_pitch_value = map(sbus_pitch, 193, 1786, 1400, 700);
       }
 
       left_roll.writeMicroseconds(left_roll_value);
