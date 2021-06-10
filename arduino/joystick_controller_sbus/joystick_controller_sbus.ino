@@ -56,6 +56,11 @@ void setup() {
   right_roll.attach(9);
   right_pitch.attach(10);
 
+  left_roll.writeMicroseconds(1000);
+  left_pitch.writeMicroseconds(1000);
+  right_roll.writeMicroseconds(1000);
+  right_pitch.writeMicroseconds(1000);
+  
   // begin the SBUS communication
   x8r.begin();
 
@@ -117,10 +122,11 @@ void loop() {
         right_pitch_value = map(sbus_pitch, 193, 1786, 1400, 700);
       }
 
-      left_roll.writeMicroseconds(left_roll_value);
-      left_pitch.writeMicroseconds(left_pitch_value);
-      right_roll.writeMicroseconds(right_roll_value);
-      right_pitch.writeMicroseconds(right_pitch_value);
+      //      left_roll.writeMicroseconds(left_roll_value);
+      //      left_pitch.writeMicroseconds(left_pitch_value);
+      //      right_roll.writeMicroseconds(right_roll_value);
+      //      right_pitch.writeMicroseconds(right_pitch_value);
+
       Serial.print("throttle: ");
       Serial.println(sbus_throttle);
       Serial.print("roll: ");
